@@ -1,0 +1,8 @@
+private.py
+username_whitelist.txt
+*.db
+venv
+mgb_database.json
+.DS_Store
+.idea
+*.pyc
