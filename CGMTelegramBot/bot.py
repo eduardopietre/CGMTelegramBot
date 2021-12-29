@@ -17,8 +17,10 @@ def commands_helper_str(only_mute=False):
     ]
 
     mute_help = [
-        "/silencia15  -  Silencia por 15 minutos.",
-        "/silencia30  -  Silencia por 30 minutos.",
+        "/silencia20  -  Silencia por 20 minutos.",
+        "/silencia40  -  Silencia por 40 minutos.",
+        "/silencia60  -  Silencia por 60 minutos.",
+        "/silencia90  -  Silencia por 90 minutos.",
         "/remover_silenciar  -  Remove o silenciar.",
     ]
 
@@ -105,12 +107,11 @@ class CGMBot(BaseBot):
             )
 
 
-    def cmd_mute15(self, update: Update, context: CallbackContext) -> None:
-        self.mute_for(update, context, 14)
+    def wrapper_cmd_mute_for(self, time: int):
+        def _mute(update: Update, context: CallbackContext):
+            self.mute_for(update, context, time)
 
-
-    def cmd_mute30(self, update: Update, context: CallbackContext) -> None:
-        self.mute_for(update, context, 29)
+        return _mute
 
 
     def cmd_unmute(self, update: Update, context: CallbackContext) -> None:
@@ -137,8 +138,10 @@ class CGMBot(BaseBot):
             ("start", self.cmd_start),
             ("g", self.cmd_glucose),
             ("glicose", self.cmd_glucose),
-            ("silencia15", self.cmd_mute15),
-            ("silencia30", self.cmd_mute30),
+            ("silencia20", self.wrapper_cmd_mute_for(20 - 1)),
+            ("silencia40", self.wrapper_cmd_mute_for(40 - 1)),
+            ("silencia60", self.wrapper_cmd_mute_for(60 - 1)),
+            ("silencia90", self.wrapper_cmd_mute_for(90 - 1)),
             ("remover_silenciar", self.cmd_unmute)
         ]
 
