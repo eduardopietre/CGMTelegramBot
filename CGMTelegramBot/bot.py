@@ -44,16 +44,20 @@ class CGMBot(BaseBot):
 
 
     def mute_for(self, update: Update, context: CallbackContext, minutes: int):
-        username = update.effective_user.username
-        if self.userDataManager.contains_username(username):
-            self.userDataManager.silence_username_for_minutes(username, minutes)
-            update.message.reply_text(
-                f"Voltaremos a avisar em {minutes} minutos.\n{commands_helper_str(only_mute=True)}"
-            )
-        else:
+        if not self.auth_manager.is_user_authorized(update.effective_user):
             update.message.reply_text(
                 f"Lamentamos, não foi possível silenciar.\n{commands_helper_str(only_mute=True)}"
             )
+            return
+
+        username = update.effective_user.username
+        if not self.userDataManager.contains_username(username):
+            self.userDataManager.init_username(username)
+
+        self.userDataManager.silence_username_for_minutes(username, minutes)
+        update.message.reply_text(
+            f"Voltaremos a avisar em {minutes} minutos.\n{commands_helper_str(only_mute=True)}"
+        )
 
 
     def check_last_reading(self) -> None:
@@ -92,12 +96,18 @@ class CGMBot(BaseBot):
 
 
     def cmd_text(self, update: Update, context: CallbackContext) -> None:
+        if not self.auth_manager.is_user_authorized(update.effective_user):
+            return
+
         update.message.reply_text(
             f"Não há comandos com essas palavras.\n{commands_helper_str()}"
         )
 
 
     def cmd_glucose(self, update: Update, context: CallbackContext) -> None:
+        if not self.auth_manager.is_user_authorized(update.effective_user):
+            return
+
         if self.previous_measure:
             message = self.previous_measure.message()
             update.message.reply_text(message)
@@ -115,6 +125,9 @@ class CGMBot(BaseBot):
 
 
     def cmd_unmute(self, update: Update, context: CallbackContext) -> None:
+        if not self.auth_manager.is_user_authorized(update.effective_user):
+            return
+
         username = update.effective_user.username
         if self.userDataManager.is_username_silenced(username):
             self.userDataManager.unmute_username(username)
