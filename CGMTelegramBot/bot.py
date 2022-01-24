@@ -6,10 +6,12 @@ from . import settings
 from .timer import RepeatedTimer
 from .database import Database
 from .basebot import BaseBot
-
+from .logger import LOGGER
 
 
 def commands_helper_str(only_mute=False):
+    LOGGER.info(f"commands_helper_str {only_mute=}")
+
     other_helps = [
         "/start  -  Refaz a autenticação do usuário.",
         "/g  -  Mostra a glicose atual.",
@@ -36,6 +38,8 @@ def commands_helper_str(only_mute=False):
 class CGMBot(BaseBot):
 
     def __init__(self, token: str, database_file: str, whitelisted_users: set[str]):
+        LOGGER.info(f"CGMBot __init__")
+
         super().__init__(token, database_file, whitelisted_users)
 
         self.database = Database()
@@ -44,6 +48,8 @@ class CGMBot(BaseBot):
 
 
     def mute_for(self, update: Update, context: CallbackContext, minutes: int):
+        LOGGER.info(f"CGMBot mute_for username={update.effective_user.username} {minutes=}")
+
         if not self.auth_manager.is_user_authorized(update.effective_user):
             update.message.reply_text(
                 f"Lamentamos, não foi possível silenciar.\n{commands_helper_str(only_mute=True)}"
@@ -61,6 +67,8 @@ class CGMBot(BaseBot):
 
 
     def check_last_reading(self) -> None:
+        LOGGER.info(f"CGMBot check_last_reading")
+
         latest_measure = self.database.latest_measure()
 
         if latest_measure != self.previous_measure:
@@ -74,6 +82,8 @@ class CGMBot(BaseBot):
 
 
     def alert_all_users(self, message):
+        LOGGER.info(f"CGMBot alert_all_users")
+
         for username, chat_id in self.auth_manager.items():
             if not self.userDataManager.is_username_silenced(username):
                 self.send_message_to_chat_id(chat_id, message)
@@ -83,6 +93,7 @@ class CGMBot(BaseBot):
 
 
     def cmd_start(self, update: Update, context: CallbackContext) -> None:
+        LOGGER.info(f"CGMBot cmd_start username={update.effective_user.username}")
         # Send a message when the command /start is issued.
 
         user = update.effective_user
@@ -96,6 +107,7 @@ class CGMBot(BaseBot):
 
 
     def cmd_text(self, update: Update, context: CallbackContext) -> None:
+        LOGGER.info(f"CGMBot cmd_text username={update.effective_user.username}")
         if not self.auth_manager.is_user_authorized(update.effective_user):
             return
 
@@ -105,6 +117,8 @@ class CGMBot(BaseBot):
 
 
     def cmd_glucose(self, update: Update, context: CallbackContext) -> None:
+        LOGGER.info(f"CGMBot cmd_glucose username={update.effective_user.username}")
+
         if not self.auth_manager.is_user_authorized(update.effective_user):
             return
 
@@ -125,6 +139,8 @@ class CGMBot(BaseBot):
 
 
     def cmd_unmute(self, update: Update, context: CallbackContext) -> None:
+        LOGGER.info(f"CGMBot cmd_unmute username={update.effective_user.username}")
+
         if not self.auth_manager.is_user_authorized(update.effective_user):
             return
 
@@ -144,6 +160,8 @@ class CGMBot(BaseBot):
 
 
     def run(self) -> None:
+        LOGGER.info(f"CGMBot run")
+
         # Set it up to check every X seconds
         self.repeating_check = RepeatedTimer(settings.CHECK_DELAY, self.check_last_reading)
 

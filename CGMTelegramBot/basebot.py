@@ -12,6 +12,8 @@ from .userdata import UserDataManager
 class BaseBot:
 
     def __init__(self, token: str, database_file: str, whitelisted_users: set[str]):
+        LOGGER.info(f"BaseBot __init__")
+
         self.token = token
         self.auth_manager = AuthManager(database_file, whitelisted_users)
         self.userDataManager = UserDataManager()
@@ -21,6 +23,8 @@ class BaseBot:
 
 
     def authenticate_user(self, user: User, chat_id: int):
+        LOGGER.info(f"BaseBot authenticate_user {user=} {chat_id=}")
+
         username = user.username
 
         if username is None:  # Security checks
@@ -31,14 +35,20 @@ class BaseBot:
 
 
     def is_user_authenticate(self, user: User):
+        LOGGER.info(f"BaseBot is_user_authenticate {user=}")
+
         self.auth_manager.is_user_authorized(user)
 
 
     def send_message_to_chat_id(self, chat_id: int, message: str) -> None:
+        LOGGER.info(f"BaseBot send_message_to_chat_id {chat_id=} {message=}")
+
         self.updater.bot.send_message(chat_id, message)
 
 
     def send_message_to_username(self, username: str, message: str) -> None:
+        LOGGER.info(f"BaseBot send_message_to_username {username=} {message=}")
+
         chat_id = self.auth_manager.chat_id_for_username(username)
         if chat_id:
             self.updater.bot.send_message(chat_id, message)
@@ -47,6 +57,8 @@ class BaseBot:
 
 
     def base_run(self, handlers: [(str, Any)], text_handler: Any) -> None:
+        LOGGER.info(f"BaseBot base_run")
+
         # Register handlers
         dispatcher = self.updater.dispatcher
 
