@@ -26,11 +26,8 @@ def wait_internet_connection():
             LOGGER.info("No internet connection available.")
         return False
 
-    while True:
-        if connected_to_internet():
-            break
-        else:
-            time.sleep(60)
+    while not connected_to_internet:
+        time.sleep(60)
 
 
 if __name__ == '__main__':
