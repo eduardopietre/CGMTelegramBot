@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
-from .. import settings
+from CGMTelegramBot import settings
 
 
 class DateEntry(ABC):

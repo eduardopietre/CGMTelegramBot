@@ -7,7 +7,7 @@ from .timer import RepeatedTimer
 from .basebot import BaseBot
 from .logger import LOGGER
 
-from CGMPredictor import Analyzer
+from CGMTelegramBot.CGMPredictor import Analyzer
 
 
 def commands_helper_str(only_mute=False):
@@ -136,6 +136,9 @@ class CGMBot(BaseBot):
 
         if not self.auth_manager.is_user_authorized(update.effective_user):
             return
+
+        if not self.previous_measure:
+            self.periodic_check_function()
 
         if self.previous_measure:
             message = self.previous_measure.message()

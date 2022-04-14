@@ -1,7 +1,7 @@
 import requests
 import time
 from CGMTelegramBot.logger import LOGGER
-from private import BOT_TOKEN
+from private import BOT_TOKEN, NIGHTSCOUT_URL, SECRET
 from CGMTelegramBot import CGMBot
 
 
@@ -36,6 +36,8 @@ if __name__ == '__main__':
     username_whitelist = get_username_whitelist()
 
     bot = CGMBot(
+        url=NIGHTSCOUT_URL,
+        secret=SECRET,
         token=BOT_TOKEN,
         database_file="mgb_database.json",
         whitelisted_users=username_whitelist
