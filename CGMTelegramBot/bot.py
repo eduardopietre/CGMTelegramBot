@@ -1,3 +1,5 @@
+import time
+
 from telegram import Update
 from telegram.ext import CallbackContext
 
@@ -47,6 +49,8 @@ class CGMBot(BaseBot):
         self.repeating_check = None
         self.previous_measure = None
 
+        self.rule_mute_until_time = 0
+
 
     def mute_for(self, update: Update, context: CallbackContext, minutes: int):
         LOGGER.info(f"CGMBot mute_for username={update.effective_user.username} {minutes=}")
@@ -92,8 +96,10 @@ class CGMBot(BaseBot):
     def check_rules(self) -> None:
         LOGGER.info(f"CGMBot check_rules")
         message = self.analyzer.rules_message()
-        if message:
+        now = time.time()
+        if message and self.rule_mute_until_time < now:
             self.alert_all_users(message, override_mute=True)
+            self.rule_mute_until_time = now + settings.MUTE_RULE_DURATION
 
 
     def alert_all_users(self, message, override_mute=False):
