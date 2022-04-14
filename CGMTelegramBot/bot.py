@@ -4,9 +4,10 @@ from telegram.ext import CallbackContext
 from . import utils
 from . import settings
 from .timer import RepeatedTimer
-from .database import Database
 from .basebot import BaseBot
 from .logger import LOGGER
+
+from CGMPredictor import Analyzer
 
 
 def commands_helper_str(only_mute=False):
@@ -37,12 +38,12 @@ def commands_helper_str(only_mute=False):
 
 class CGMBot(BaseBot):
 
-    def __init__(self, token: str, database_file: str, whitelisted_users: set[str]):
+    def __init__(self, token: str, url: str, secret: str, database_file: str, whitelisted_users: set[str]):
         LOGGER.info(f"CGMBot __init__")
 
         super().__init__(token, database_file, whitelisted_users)
 
-        self.database = Database()
+        self.analyzer = Analyzer(url, secret)
         self.repeating_check = None
         self.previous_measure = None
 
@@ -66,10 +67,17 @@ class CGMBot(BaseBot):
         )
 
 
+    def periodic_check_function(self) -> None:
+        LOGGER.info(f"CGMBot periodic_check_function")
+        if self.analyzer.get_new_data():
+            self.check_last_reading()
+            self.check_rules()
+
+
     def check_last_reading(self) -> None:
         LOGGER.info(f"CGMBot check_last_reading")
 
-        latest_measure = self.database.latest_measure()
+        latest_measure = self.analyzer.latest_measure()
 
         if latest_measure != self.previous_measure:
             self.previous_measure = latest_measure
@@ -81,11 +89,18 @@ class CGMBot(BaseBot):
                 self.alert_all_users(message)
 
 
-    def alert_all_users(self, message):
+    def check_rules(self) -> None:
+        LOGGER.info(f"CGMBot check_rules")
+        message = self.analyzer.rules_message()
+        if message:
+            self.alert_all_users(message, override_mute=True)
+
+
+    def alert_all_users(self, message, override_mute=False):
         LOGGER.info(f"CGMBot alert_all_users")
 
         for username, chat_id in self.auth_manager.items():
-            if not self.userDataManager.is_username_silenced(username):
+            if override_mute or not self.userDataManager.is_username_silenced(username):
                 self.send_message_to_chat_id(chat_id, message)
 
 
@@ -163,7 +178,7 @@ class CGMBot(BaseBot):
         LOGGER.info(f"CGMBot run")
 
         # Set it up to check every X seconds
-        self.repeating_check = RepeatedTimer(settings.CHECK_DELAY, self.check_last_reading)
+        self.repeating_check = RepeatedTimer(settings.CHECK_DELAY, self.periodic_check_function)
 
         handlers = [
             ("start", self.cmd_start),
