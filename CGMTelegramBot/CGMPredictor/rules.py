@@ -90,7 +90,7 @@ def rule_fast_rising(data: AnalyzerData) -> RuleResult:
 
     # Calculate the delta average
     delta_average = sum(deltas) / len(deltas)
-    if delta_average < 4:
+    if delta_average < 6:
         return RuleResult(False)
 
     # Check if deltas are reducing. This indicates stabilization.
