@@ -109,7 +109,7 @@ def rule_fast_rising(data: AnalyzerData) -> RuleResult:
 
 @rule_filter_wrap(newest=10, max_measures_minutes_elapsed=12, max_minutes_date_diff_to_now=10)
 def rule_stable_over_limit(data: AnalyzerData) -> RuleResult:
-    if data.measures[0].sgv < 175:
+    if data.measures[-1].sgv < 175:
         return RuleResult(False)
 
     above_180 = sum(m.sgv > 180 for m in data.measures)
@@ -130,10 +130,25 @@ def rule_stable_over_limit(data: AnalyzerData) -> RuleResult:
     )
 
 
+@rule_filter_wrap()
+def rule_no_new_data(data: AnalyzerData) -> RuleResult:
+    last_time = data.measures[-1].date
+
+    if date_seconds_diff_to_now(last_time) < (60 * 25):
+        return RuleResult(False)
+
+    return RuleResult(
+        True,
+        "Sinal do MiaoMiao perdido. Última medida há mais de 25 minutos. "
+        "Considerar verificar o dispositivo e a conexão com a internet."
+    )
+
+
 RULES = (
     rule_imminent_hypoglycemia,
     rule_fast_rising,
     rule_stable_over_limit,
+    rule_no_new_data,
 )
 
 
