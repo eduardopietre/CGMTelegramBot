@@ -117,7 +117,7 @@ def rule_stable_over_limit(data: AnalyzerData) -> RuleResult:
     above_220 = sum(m.sgv >= 220 for m in data.measures)
 
     # At least 5 readings over 180, less than 5 bellow 175 and zero above 220
-    if not (above_180 >= 5 and bellow_175 < 5 and above_220 == 0):
+    if not (above_180 >= 6 and bellow_175 < 5 and above_220 == 0):
         return RuleResult(False)
 
     # Check if insulin in lasts 40 minutes.
